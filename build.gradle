@@ -14,6 +14,10 @@ dependencies {
     testImplementation platform('org.junit:junit-bom:5.14.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // Optional local compatibility fixtures, never embedded in the distributed JAR.
+    if (providers.gradleProperty('shaderTestMods').isPresent()) {
+        runtimeOnly fileTree(dir: providers.gradleProperty('shaderTestMods').get(), includes: ['iris-*.jar', 'sodium-*.jar'])
+    }
 }
 
 processResources {
@@ -37,5 +41,11 @@ fabricApi {
         modId = 'lumen-test'
         enableGameTests = false
         enableClientGameTests = true
+    }
+}
+
+tasks.named('runClientGameTest') {
+    if (providers.gradleProperty('shaderTestPack').isPresent()) {
+        systemProperty 'lumen.test.shaderPack', providers.gradleProperty('shaderTestPack').get()
     }
 }

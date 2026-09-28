@@ -5,6 +5,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -44,6 +45,11 @@ public final class LumenClient implements ClientModInitializer {
         zoomKey = register("zoom", InputConstants.KEY_C, category);
         brightnessKey = register("fullbright", InputConstants.KEY_B, category);
         ClientTickEvents.END_CLIENT_TICK.register(LumenClient::tick);
+        HudElementRegistry.addFirst(Identifier.fromNamespaceAndPath("lumen", "markers"), (graphics, delta) -> {
+            Minecraft mc = Minecraft.getInstance();
+            if (settings.throughWalls && canDrawMarkers(mc) && !graphics.guiRenderState.isHudHidden)
+                MarkerOverlay.extract(graphics, mc, hits, settings.filters);
+        });
         LOG.info("Lumen Java ready: Minecraft 26.3; {} supported blocks; client-side rendering only", kinds.size());
     }
     private static KeyMapping register(String name, int key, KeyMapping.Category category) {
@@ -83,16 +89,21 @@ public final class LumenClient implements ClientModInitializer {
         hits = scanner.visible(center, settings.markers);
     }
     public static int markerCount() { return hits.size(); }
+    private static boolean canDrawMarkers(Minecraft mc) {
+        return settings.xray && mc.level != null && mc.level == scannedLevel && mc.player != null
+                && mc.gameRenderer.gameRenderState().shouldRenderLevel;
+    }
     /** Invoked during level extraction before vanilla drains its per-frame gizmo collector. */
     public static void extractMarkers() {
         Minecraft mc = Minecraft.getInstance();
-        if (!settings.xray || mc.level == null || mc.level != scannedLevel || mc.player == null) return;
+        // Iris retains world depth for its composites, so vanilla always-on-top gizmos
+        // remain occluded. Through-wall markers use the separate GUI overlay below.
+        if (settings.throughWalls || !canDrawMarkers(mc)) return;
         try (var ignored = mc.levelExtractor.collectPerFrameMainThreadGizmos()) {
             for (var hit : hits) {
                 if (!settings.selected(hit.kind())) continue;
                 var p = hit.position();
-                var properties = Gizmos.cuboid(new BlockPos(p.x(), p.y(), p.z()), 0.002f, GizmoStyle.stroke(hit.kind().color, 2.0f));
-                if (settings.throughWalls) properties.setAlwaysOnTop();
+                Gizmos.cuboid(new BlockPos(p.x(), p.y(), p.z()), 0.002f, GizmoStyle.stroke(hit.kind().color, 2.0f));
             }
         }
     }
