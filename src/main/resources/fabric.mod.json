@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "lumen",
+  "version": "${version}",
+  "name": "Lumen",
+  "description": "Ore and chest highlights, Zoom and Fullbright. Your world. Clearer.",
+  "authors": ["Auron Network"],
+  "contact": {
+    "homepage": "https://github.com/AuronNetwork/Lumen-Java",
+    "sources": "https://github.com/AuronNetwork/Lumen-Java",
+    "issues": "https://github.com/AuronNetwork/Lumen-Java/issues"
+  },
+  "license": "GPL-3.0-only",
+  "icon": "assets/lumen/icon.png",
+  "environment": "client",
+  "entrypoints": {"client": ["net.auronnetwork.lumen.LumenClient"]},
+  "mixins": ["lumen.mixins.json"],
+  "depends": {"fabricloader": ">=0.19.5", "minecraft": "26.3", "java": ">=25", "fabric-api": ">=0.161.0"}
+}

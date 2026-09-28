@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "net.auronnetwork.lumen.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": ["CameraMixin", "LightmapMixin", "LevelExtractorMixin"],
+  "injectors": {"defaultRequire": 1}
+}
