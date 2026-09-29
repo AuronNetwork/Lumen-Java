@@ -35,8 +35,8 @@ public final class LumenScreen extends Screen {
         }
         int y = top + 76;
         int bodyHeight = panelHeight - 104;
-        int gap = Math.clamp(bodyHeight / 4, 24, 49);
-        int rowHeight = Math.clamp(gap - 6, 18, 30);
+        int gap = Math.clamp(bodyHeight / 5, 20, 43);
+        int rowHeight = Math.clamp(gap - 5, 16, 30);
         var s = LumenClient.settings;
         if (tab == 0) {
             int columnWidth = (contentWidth - 12) / 2;
@@ -48,11 +48,13 @@ public final class LumenScreen extends Screen {
                     "Hold the Zoom key (default C). Release to restore your view.");
             toggle(left + 12, y + 3 * gap, columnWidth, rowHeight, "Fullbright", () -> s.fullbright, () -> s.fullbright = !s.fullbright,
                     "Brighten the view locally. Default key: B.");
+            toggle(left + 12, y + 4 * gap, columnWidth, rowHeight, "No Attack Cooldown", () -> s.noAttackCooldown, () -> s.noAttackCooldown = !s.noAttackCooldown,
+                    "Full melee attack strength without recharging in singleplayer. Inactive on multiplayer/LAN. Target damage immunity is unchanged.");
             int right = left + 24 + columnWidth;
             addRenderableWidget(new LumenSlider(right, y, columnWidth, rowHeight, "Radius", " blocks", 4, 24, 1, () -> s.radius, v -> s.radius = v));
             addRenderableWidget(new LumenSlider(right, y + gap, columnWidth, rowHeight, "Markers", "", 32, 512, 32, () -> s.markers, v -> s.markers = v));
             addRenderableWidget(new LumenSlider(right, y + 2 * gap, columnWidth, rowHeight, "Zoom", "x", 2, 20, 1, () -> s.zoomFactor, v -> s.zoomFactor = v));
-            button(right, y + 3 * gap, columnWidth, rowHeight, () -> "Done", () -> false, this::onClose,
+            button(right, y + 4 * gap, columnWidth, rowHeight, () -> "Done", () -> false, this::onClose,
                     "Close Lumen and return to your game.");
         } else {
             int start = tab == 1 ? 0 : 10, end = tab == 1 ? 10 : 13;
@@ -87,6 +89,13 @@ public final class LumenScreen extends Screen {
         g.text(font, "AURON NETWORK / JAVA 26.3", left + 12, top + 28, MUTED, false);
         String close = LumenClient.menuKey.getTranslatedKeyMessage().getString() + " / Esc";
         g.text(font, close, left + panelWidth - 12 - font.width(close), top + 13, SIGNAL, false);
+        if (tab == 0) {
+            int columnWidth = (panelWidth - 36) / 2;
+            int gap = Math.clamp((panelHeight - 104) / 5, 20, 43);
+            String scope = AttackCooldown.available(minecraft) ? "Combat: singleplayer" : "Combat inactive: local only";
+            g.centeredText(font, font.plainSubstrByWidth(scope, columnWidth - 8), left + 24 + columnWidth + columnWidth / 2,
+                    top + 76 + 3 * gap + 4, MUTED);
+        }
         String status = LumenClient.saveError.isEmpty()
                 ? (LumenClient.settings.xray ? LumenClient.markerCount() + " blocks marked" : "Xray is off")
                 : LumenClient.saveError;

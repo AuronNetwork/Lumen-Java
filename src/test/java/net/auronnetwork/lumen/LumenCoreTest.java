@@ -37,6 +37,19 @@ class LumenCoreTest {
         assertEquals(BlockKind.SUPPORTED_MASK, s.filters); assertTrue(s.zoom);
         assertEquals(1, Files.list(directory).count());
     }
+    @Test void attackCooldownDefaultsOffForNewAndExistingConfigsAndPersistsBothStates() throws Exception {
+        var file = directory.resolve("lumen.properties");
+        assertFalse(LumenSettings.load(file).noAttackCooldown);
+        Files.writeString(file, "xray=true\nradius=24\n");
+        var s = LumenSettings.load(file);
+        assertFalse(s.noAttackCooldown); assertTrue(s.xray); assertEquals(24, s.radius);
+        s.noAttackCooldown = true; s.save(file);
+        assertTrue(LumenSettings.load(file).noAttackCooldown);
+        s.noAttackCooldown = false; s.save(file);
+        assertFalse(LumenSettings.load(file).noAttackCooldown);
+        Files.writeString(file, "noAttackCooldown=invalid\n");
+        assertFalse(LumenSettings.load(file).noAttackCooldown);
+    }
     @Test void markerOrderingLimitsAndRefreshTrackWorldChanges() {
         var scanner = new BlockScanner(); var world = new HashMap<BlockScanner.Position, BlockKind>();
         var near = new BlockScanner.Position(1, 0, 0); var far = new BlockScanner.Position(3, 0, 0);

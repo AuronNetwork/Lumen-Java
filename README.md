@@ -4,9 +4,9 @@
 
 A client-only Fabric edition of Lumen by Auron Network. English interface, dark
 translucent panels and yellow accents. Current Java test build:
-**1.0.0-beta.2**; Java and Bedrock use separate binaries and version numbers.
+**1.0.0-beta.3**; Java and Bedrock use separate binaries and version numbers.
 
-[Download the Java beta](https://github.com/AuronNetwork/Lumen-Java/releases/tag/v1.0.0-beta.2)
+[Download the Java beta](https://github.com/AuronNetwork/Lumen-Java/releases/tag/v1.0.0-beta.3)
  · [Report an issue](https://github.com/AuronNetwork/Lumen-Java/issues)
  · [Test coverage and limits](TESTING.md)
  · [Bedrock edition](https://github.com/AuronNetwork/Lumen)
@@ -15,7 +15,7 @@ translucent panels and yellow accents. Current Java test build:
 
 1. Install [Fabric Loader](https://fabricmc.net/use/installer/) **0.19.5 or newer**
    for **Minecraft Java 26.3** and select that profile in your launcher.
-2. Place `lumen-java-1.0.0-beta.2.jar` and
+2. Place `lumen-java-1.0.0-beta.3.jar` and
    [Fabric API for 26.3](https://modrinth.com/mod/fabric-api/versions?g=26.3)
    in that profile's `mods` folder. This build uses Fabric API **0.161.0+26.3**.
    For the standard launcher the default folder is `%APPDATA%\.minecraft\mods`.
@@ -61,8 +61,9 @@ The **Features**, **Ore Filters** and **Chest Filters** tabs provide:
 - Normal chests, trapped chests and ender chests as independent filters.
 - Optional visibility through walls. Double chests have two marked block positions.
 - 2x-20x hold-to-zoom and local Fullbright.
+- **No Attack Cooldown**: optional full melee attack strength in singleplayer.
 
-Fresh settings start with Xray and Fullbright off, Zoom enabled, a 16-block radius,
+Fresh settings start with Xray, Fullbright and No Attack Cooldown off, Zoom enabled, a 16-block radius,
 192 markers, 4x zoom, selected valuable ores and all chest filters off.
 Settings are saved in the profile's `config/lumen.properties`.
 Bedrock's INI settings are not automatically imported.
@@ -73,6 +74,25 @@ Server-hidden or substituted block data cannot be recovered by this mod.
 Zoom and Fullbright modify the rendered view, without overwriting Minecraft's
 FOV/brightness options or adding potion effects. Modpack compatibility and
 additional rendering backends require separate testing.
+
+### No Attack Cooldown
+
+Open **Insert → Features → No Attack Cooldown** to turn the feature on or off.
+While enabled in a private singleplayer world, your melee attacks use full
+recharge strength immediately, including on the integrated server that calculates
+damage. Item minimum-attack-charge checks also respect the setting. This is a
+gameplay change, not just a hidden cooldown indicator.
+
+The setting is saved and defaults to **OFF**, including when upgrading an older
+configuration. It affects your own player only and is automatically inactive on
+remote servers and worlds opened to multiplayer/LAN. It cannot remove the attack
+cooldown enforced by another server.
+
+Turning it off immediately restores vanilla charge calculations. Weapon damage
+and attack-speed attributes, player timers and world save data are not overwritten.
+Target damage immunity, the missed-swing click delay, item-use cooldowns and attack
+animations retain their normal behavior. Rapidly hitting the same target can still
+be limited by that target's normal damage immunity.
 
 ## Build and test
 
@@ -88,7 +108,8 @@ mod JAR plus source JAR in `build/libs`. The second command launches a separate
 development client and creates a disposable local test world under `build/run`.
 It is not part of the distributed mod. Do not point its run directory at a
 personal Minecraft instance. The tests cover scanning, UI controls, saved filters,
-zoom restoration and Fullbright, and capture screenshots for visual inspection.
+zoom restoration, Fullbright, actual singleplayer melee damage and cooldown
+restoration, and capture screenshots for visual inspection.
 
 To run the optional Iris compatibility test, supply local Iris/Sodium JARs and
 a shader ZIP (these are test fixtures, not bundled or downloaded by Lumen):

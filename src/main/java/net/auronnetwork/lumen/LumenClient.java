@@ -5,6 +5,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.KeyMapping;
@@ -45,17 +46,19 @@ public final class LumenClient implements ClientModInitializer {
         zoomKey = register("zoom", InputConstants.KEY_C, category);
         brightnessKey = register("fullbright", InputConstants.KEY_B, category);
         ClientTickEvents.END_CLIENT_TICK.register(LumenClient::tick);
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> AttackCooldown.clear());
         HudElementRegistry.addFirst(Identifier.fromNamespaceAndPath("lumen", "markers"), (graphics, delta) -> {
             Minecraft mc = Minecraft.getInstance();
             if (settings.throughWalls && canDrawMarkers(mc) && !graphics.guiRenderState.isHudHidden)
                 MarkerOverlay.extract(graphics, mc, hits, settings.filters);
         });
-        LOG.info("Lumen Java ready: Minecraft 26.3; {} supported blocks; client-side rendering only", kinds.size());
+        LOG.info("Lumen Java ready: Minecraft 26.3; {} supported blocks; local-world combat option available", kinds.size());
     }
     private static KeyMapping register(String name, int key, KeyMapping.Category category) {
         return KeyMappingHelper.registerKeyMapping(new KeyMapping("key.lumen." + name, InputConstants.Type.KEYBOARD, key, category));
     }
     public static void save() {
+        AttackCooldown.refresh(Minecraft.getInstance());
         try { settings.save(CONFIG); saveError = ""; }
         catch (Exception e) { saveError = "Could not save settings. See latest.log."; LOG.error("Cannot save Lumen settings", e); }
     }
@@ -69,6 +72,7 @@ public final class LumenClient implements ClientModInitializer {
         return settings.fullbright && mc.level != null && mc.player != null;
     }
     private static void tick(Minecraft mc) {
+        AttackCooldown.refresh(mc);
         while (menuKey.consumeClick()) {
             if (mc.player != null && mc.gui.screen() == null) mc.gui.setScreen(new LumenScreen());
         }

@@ -23,7 +23,7 @@ with zipfile.ZipFile(jar) as z:
     assert meta['version'] == version and meta['depends']['minecraft'] == '26.3'
     assert meta['environment'] == 'client'
     assert all(n in z.namelist() for n in ('LICENSE-Lumen', 'NOTICE-Lumen.md', 'lumen.mixins.json', 'assets/lumen/icon.png'))
-    assert not any(n.startswith(('net/minecraft/', 'com/mojang/')) or 'LumenGameTest' in n for n in z.namelist())
+    assert not any(n.startswith(('net/minecraft/', 'com/mojang/')) or (n.endswith('.class') and 'Test' in n) for n in z.namelist())
 out.mkdir(parents=True, exist_ok=True)
 shutil.copy2(jar, out / jar_name)
 for name in ('README.md', 'LICENSE', 'NOTICE.md', 'TESTING.md'):

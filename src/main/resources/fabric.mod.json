@@ -3,7 +3,7 @@
   "id": "lumen",
   "version": "${version}",
   "name": "Lumen",
-  "description": "Ore and chest highlights, Zoom and Fullbright. Your world. Clearer.",
+  "description": "Ore and chest highlights, Zoom, Fullbright, and optional No Attack Cooldown for singleplayer.",
   "authors": ["Auron Network"],
   "contact": {
     "homepage": "https://github.com/AuronNetwork/Lumen-Java",

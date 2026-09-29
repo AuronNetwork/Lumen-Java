@@ -74,6 +74,7 @@ public final class LumenGameTest implements FabricClientGameTest {
             });
         }
         TestWorldSave save;
+        net.minecraft.client.player.LocalPlayer previousPlayer;
         try (var world = context.worldBuilder().create()) {
             save = world.getWorldSave();
             var server = world.getServer();
@@ -158,6 +159,7 @@ public final class LumenGameTest implements FabricClientGameTest {
             context.getInput().resizeWindow(1280, 720);
             context.waitTicks(5);
             context.takeScreenshot("lumen-menu-1280x720");
+            LumenCombatTest.run(context, server);
             double[] point = context.computeOnClient(mc -> {
                 var slider = mc.gui.screen().children().stream().filter(w -> w instanceof AbstractSliderButton)
                         .map(w -> (AbstractSliderButton)w).findFirst().orElseThrow();
@@ -172,6 +174,9 @@ public final class LumenGameTest implements FabricClientGameTest {
             context.getInput().resizeWindow(1280, 900);
             context.waitTicks(5);
             context.takeScreenshot("lumen-ore-filters-1280x900");
+            context.clickScreenButton("Features");
+            context.waitTicks(3);
+            context.takeScreenshot("lumen-features-1280x900");
             context.clickScreenButton("Chest Filters");
             context.waitTicks(3);
             context.takeScreenshot("lumen-chest-filters");
@@ -189,18 +194,33 @@ public final class LumenGameTest implements FabricClientGameTest {
                 try {
                     var restored = LumenSettings.load(FabricLoader.getInstance().getConfigDir().resolve("lumen.properties"));
                     check(restored.filters == LumenClient.settings.filters, "Filters persist to disk");
+                    check(restored.noAttackCooldown, "Combat preference remains saved");
                 } catch (java.io.IOException e) { throw new AssertionError("Settings reload failed", e); }
                 LumenClient.settings.filters = BlockKind.CHEST.bit();
             });
             context.waitFor(mc -> LumenClient.markerCount() == 1, 300);
             server.runCommand("setblock -3 101 6 minecraft:air");
             context.waitFor(mc -> LumenClient.markerCount() == 0, 100);
+            previousPlayer = context.computeOnClient(mc -> mc.player);
+            context.runOnClient(mc -> check(AttackCooldown.appliesTo(mc.player), "Combat still enabled before disconnect"));
             context.runOnClient(mc -> LumenClient.settings.xray = false);
         }
         context.waitTicks(3);
-        context.runOnClient(mc -> check(LumenClient.markerCount() == 0, "Leaving world clears markers"));
+        context.runOnClient(mc -> {
+            check(LumenClient.markerCount() == 0, "Leaving world clears markers");
+            check(!AttackCooldown.available(mc), "No combat context without a world");
+            check(!AttackCooldown.appliesTo(previousPlayer), "Disconnect clears the previous player's combat context");
+        });
         try (var reopened = save.open()) {
             reopened.getConnection().waitForChunksRender();
+            context.waitFor(mc -> AttackCooldown.appliesTo(mc.player), 100);
+            context.runOnClient(mc -> check(!AttackCooldown.appliesTo(previousPlayer), "New world does not reuse old client player"));
+            reopened.getServer().runOnServer(s -> {
+                var player = s.getPlayerList().getPlayers().getFirst();
+                player.resetAttackStrengthTicker();
+                check(player.getAttackStrengthScale(0) == 1, "Combat setting applies to reopened local world");
+            });
+            context.runOnClient(mc -> { LumenClient.settings.noAttackCooldown = false; LumenClient.save(); });
             context.runOnClient(mc -> { LumenClient.settings.xray = true; LumenClient.settings.filters = BlockKind.ENDER_CHEST.bit(); });
             context.waitFor(mc -> LumenClient.markerCount() == 1, 300);
             context.getInput().pressKey(LumenClient.xrayKey);

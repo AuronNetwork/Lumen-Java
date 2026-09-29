@@ -7,6 +7,7 @@ import java.util.Properties;
 
 public final class LumenSettings {
     public boolean xray = false, throughWalls = true, zoom = true, fullbright = false;
+    public boolean noAttackCooldown = false;
     public int radius = 16, markers = 192, zoomFactor = 4, filters = BlockKind.DEFAULT_MASK;
 
     public boolean selected(BlockKind kind) { return kind != null && (filters & kind.bit()) != 0; }
@@ -25,6 +26,7 @@ public final class LumenSettings {
         s.throughWalls = bool(p, "throughWalls", s.throughWalls);
         s.zoom = bool(p, "zoom", s.zoom);
         s.fullbright = bool(p, "fullbright", s.fullbright);
+        s.noAttackCooldown = bool(p, "noAttackCooldown", s.noAttackCooldown);
         s.radius = integer(p, "radius", s.radius);
         s.markers = integer(p, "markers", s.markers);
         s.zoomFactor = integer(p, "zoomFactor", s.zoomFactor);
@@ -39,6 +41,7 @@ public final class LumenSettings {
         p.setProperty("throughWalls", Boolean.toString(throughWalls));
         p.setProperty("zoom", Boolean.toString(zoom));
         p.setProperty("fullbright", Boolean.toString(fullbright));
+        p.setProperty("noAttackCooldown", Boolean.toString(noAttackCooldown));
         p.setProperty("radius", Integer.toString(radius));
         p.setProperty("markers", Integer.toString(markers));
         p.setProperty("zoomFactor", Integer.toString(zoomFactor));

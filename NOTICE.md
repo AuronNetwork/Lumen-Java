@@ -1,6 +1,6 @@
 # Lumen Java attribution
 
-Lumen Java 1.0.0-beta.1, Auron Network, September 2026.
+Lumen Java, Auron Network, September 2026.
 License: GPL-3.0-only; the full license is included in this directory and the JAR.
 
 The Java edition reimplements Lumen's own scanner, settings and interface concepts

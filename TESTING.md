@@ -1,12 +1,12 @@
 # Java 26.3 validation
 
-Tested September 28, 2026: Lumen Java 1.0.0-beta.2, Minecraft 26.3,
+Tested September 29, 2026: Lumen Java 1.0.0-beta.3, Minecraft 26.3,
 Fabric Loader 0.19.5, Fabric API 0.161.0+26.3, Java 25, Windows x64.
 Rendering backend used by the automated game test: OpenGL on NVIDIA hardware.
 
 ## Completed
 
-- `gradlew build`: successful; ten JUnit tests pass with no failures.
+- `gradlew build`: successful; eleven JUnit tests pass with no failures.
 - `gradlew runClientGameTest`: successful in a separate Fabric development
   instance. Its own test world was created, closed and reopened.
 - All production mixins loaded in the actual game without missing-target errors.
@@ -27,12 +27,46 @@ Rendering backend used by the automated game test: OpenGL on NVIDIA hardware.
 - Actual game screenshots of the menu/filter tabs were inspected at 1280x720
   and 1280x900. Controls and labels fit without clipping.
 
+## No Attack Cooldown
+
+The client game test enables/disables the feature through the actual **Features**
+screen. Damage is measured on the integrated server using an unenchanted iron axe
+against fresh test pigs. These are live game entities in a disposable test world,
+not mocked damage calculations.
+
+| State | Measured damage (health points) |
+| --- | ---: |
+| Vanilla, fully charged | 9.0 |
+| Vanilla, immediate uncharged attack | 1.8036451 |
+| Option ON, first attack after resetting charge | 9.0 |
+| Option ON, immediate repeat on a fresh target | 9.0 |
+| Option OFF, uncharged attack restored | 1.8036451 |
+
+- The client attack-strength indicator and server calculation both report full
+  charge when enabled and return to the vanilla calculation immediately when disabled.
+- Item minimum-attack-charge checks follow ON/OFF on both sides.
+- Attack-speed and weapon-damage attributes retain their original values.
+- A second immediate hit on the same target still respects target damage immunity.
+- Another server-side player object retains normal charge calculations.
+- The new setting defaults OFF for new, old and malformed config files; both
+  values round-trip, and the real UI writes the enabled setting to disk.
+- Disconnect invalidates the old player context. Reopening the test world binds
+  the saved preference to the new player; the old client player remains inactive.
+- The feature menu and ON/OFF screenshots were inspected at 1280x720 and 1280x900.
+
+Production activation is limited to the current local player and that player's
+private integrated-server session. The code checks the server identity and
+multiplayer-publication state; remote servers and multiplayer/LAN worlds are not
+supported. The tests did not open a network listener or connect to a public server.
+No player timer or weapon attribute is overwritten, so disabling removes the
+calculation override without changing persisted world data.
+
 ## Iris regression
 
 The original through-wall rendering used vanilla always-on-top gizmos. Iris
 retains world depth for shader composition, which leaves those outlines hidden
 by terrain. The upstream report is [Iris issue 3297](https://github.com/IrisShaders/Iris/issues/3297).
-Beta 2 uses one GUI batch for through-wall outlines after world shader composition.
+Since beta 2, Lumen uses one GUI batch for through-wall outlines after world shader composition.
 The batch belongs to the current frame and receives the exact world projection
 during rendering, including zoom, camera bobbing and hurt/portal transformations.
 Normal depth-tested outlines still use vanilla gizmos. There is no Iris dependency
@@ -53,6 +87,8 @@ test instance; no personal Prism profile, mod or world was changed.
   that the Lumen menu draws above the outlines.
 - The existing filter, zoom release, lightmap restoration, mouse/menu, slider,
   persistence, block removal and world re-entry checks also pass with Iris.
+- The beta 3 integrated-server combat damage and restoration checks also pass
+  with this shader configuration.
 
 The three projection tests cover viewport clipping, near-plane crossings,
 geometry behind the camera, both graphics depth ranges, reversed depth,
@@ -67,7 +103,7 @@ ordering, read/marker/radius limits, removal/replacement, teleport and reset.
 
 These are automated development-client tests plus visual inspection of the
 captured game frames. User acceptance in a normal installed Fabric profile is
-still pending for beta 2. Other shader packs, the rest of the user's Prism modpack
+still pending for beta 3. Other shader packs, the rest of the user's Prism modpack
 (including Distant Horizons and Freecam), Vulkan, non-Windows platforms and
 multiplayer compatibility were not tested. The Java release remains a beta.
 Fullbright's lightmap state restores correctly with Iris, but a shader pack's
@@ -83,5 +119,8 @@ prevent the test world from loading or the checks from passing.
 Install the beta and matching Fabric API in a Fabric 26.3 profile. In a local
 test world, check Xray with your preferred ore/chest filters, C hold/release,
 B on/off, Insert/Escape and mouse controls. Restart Minecraft to confirm saved
-filters. Report the Lumen version and that profile's `logs/latest.log` if a
+filters. Toggle **Features → No Attack Cooldown** in singleplayer and compare
+rapid attacks on separate targets, then turn it off to restore normal charging.
+Repeated hits on one target still respect its damage immunity.
+Report the Lumen version and that profile's `logs/latest.log` if a
 problem occurs. Do not install the development test mod or source JAR.
