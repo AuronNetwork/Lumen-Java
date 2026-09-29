@@ -20,7 +20,7 @@ jar = root / 'build/libs' / jar_name
 with zipfile.ZipFile(jar) as z:
     assert z.testzip() is None
     meta = json.loads(z.read('fabric.mod.json'))
-    assert meta['version'] == version and meta['depends']['minecraft'] == '26.3'
+    assert meta['version'] == version and meta['depends']['minecraft'] == '26.2'
     assert meta['environment'] == 'client'
     assert all(n in z.namelist() for n in ('LICENSE-Lumen', 'NOTICE-Lumen.md', 'lumen.mixins.json', 'assets/lumen/icon.png'))
     assert not any(n.startswith(('net/minecraft/', 'com/mojang/')) or (n.endswith('.class') and 'Test' in n) for n in z.namelist())

@@ -52,10 +52,10 @@ public final class LumenClient implements ClientModInitializer {
             if (settings.throughWalls && canDrawMarkers(mc) && !graphics.guiRenderState.isHudHidden)
                 MarkerOverlay.extract(graphics, mc, hits, settings.filters);
         });
-        LOG.info("Lumen Java ready: Minecraft 26.3; {} supported blocks; local-world combat option available", kinds.size());
+        LOG.info("Lumen Java ready: Minecraft 26.2; {} supported blocks; local-world combat option available", kinds.size());
     }
     private static KeyMapping register(String name, int key, KeyMapping.Category category) {
-        return KeyMappingHelper.registerKeyMapping(new KeyMapping("key.lumen." + name, InputConstants.Type.KEYBOARD, key, category));
+        return KeyMappingHelper.registerKeyMapping(new KeyMapping("key.lumen." + name, InputConstants.Type.KEYSYM, key, category));
     }
     public static void save() {
         AttackCooldown.refresh(Minecraft.getInstance());
@@ -94,8 +94,10 @@ public final class LumenClient implements ClientModInitializer {
     }
     public static int markerCount() { return hits.size(); }
     private static boolean canDrawMarkers(Minecraft mc) {
+        // In 26.2, vanilla invokes the HUD/gizmo callbacks only for level frames.
+        // There is no GameRenderState.shouldRenderLevel field in this version.
         return settings.xray && mc.level != null && mc.level == scannedLevel && mc.player != null
-                && mc.gameRenderer.gameRenderState().shouldRenderLevel;
+                && mc.isGameLoadFinished();
     }
     /** Invoked during level extraction before vanilla drains its per-frame gizmo collector. */
     public static void extractMarkers() {

@@ -86,7 +86,7 @@ public final class LumenScreen extends Screen {
         g.fill(left, top, left + panelWidth, top + panelHeight, 0xeb050505);
         g.fill(left, top, left + panelWidth, top + 2, SIGNAL);
         g.text(font, "LUMEN", left + 12, top + 13, PAPER, false);
-        g.text(font, "AURON NETWORK / JAVA 26.3", left + 12, top + 28, MUTED, false);
+        g.text(font, "AURON NETWORK / JAVA 26.2", left + 12, top + 28, MUTED, false);
         String close = LumenClient.menuKey.getTranslatedKeyMessage().getString() + " / Esc";
         g.text(font, close, left + panelWidth - 12 - font.width(close), top + 13, SIGNAL, false);
         if (tab == 0) {

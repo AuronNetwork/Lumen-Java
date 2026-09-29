@@ -1,27 +1,31 @@
 <img src="src/main/resources/assets/lumen/icon.png" width="80" height="80" alt="Lumen — Auron Network">
 
-# Lumen for Minecraft Java 26.3
+# Lumen for Minecraft Java 26.2
 
 A client-only Fabric edition of Lumen by Auron Network. English interface, dark
 translucent panels and yellow accents. Current Java test build:
-**1.0.0-beta.3**; Java and Bedrock use separate binaries and version numbers.
+**1.0.0-beta.3-mc26.2**; Java and Bedrock use separate binaries and version numbers.
 
-[Download the Java beta](https://github.com/AuronNetwork/Lumen-Java/releases/tag/v1.0.0-beta.3)
+[Download the Java beta](https://github.com/AuronNetwork/Lumen-Java/releases/tag/v1.0.0-beta.3-mc26.2)
  · [Report an issue](https://github.com/AuronNetwork/Lumen-Java/issues)
  · [Test coverage and limits](TESTING.md)
  · [Bedrock edition](https://github.com/AuronNetwork/Lumen)
 
+This is the separate **Minecraft 26.2** backport on the `support/mc-26.2` branch.
+The [Minecraft 26.3 build](https://github.com/AuronNetwork/Lumen-Java/releases/tag/v1.0.0-beta.3)
+remains available separately. Install only the JAR matching your Minecraft version.
+
 ## Install
 
 1. Install [Fabric Loader](https://fabricmc.net/use/installer/) **0.19.5 or newer**
-   for **Minecraft Java 26.3** and select that profile in your launcher.
-2. Place `lumen-java-1.0.0-beta.3.jar` and
-   [Fabric API for 26.3](https://modrinth.com/mod/fabric-api/versions?g=26.3)
-   in that profile's `mods` folder. This build uses Fabric API **0.161.0+26.3**.
+   for **Minecraft Java 26.2** and select that profile in your launcher.
+2. Place `lumen-java-1.0.0-beta.3-mc26.2.jar` and
+   [Fabric API for 26.2](https://modrinth.com/mod/fabric-api/versions?g=26.2)
+   in that profile's `mods` folder. This build uses Fabric API **0.161.0+26.2**.
    For the standard launcher the default folder is `%APPDATA%\.minecraft\mods`.
 3. Start the Fabric profile, enter a world and press **Insert**.
 
-Minecraft 26.3 requires Java 25; the official launcher supplies its game runtime.
+Minecraft 26.2 requires Java 25; the official launcher supplies its game runtime.
 Install this mod on the client only. No Lumen EXE, DLL, Latite or server mod is
 required. Remove older Lumen Java JARs from the same profile before updating.
 
@@ -30,14 +34,14 @@ In Prism Launcher, right-click the instance, choose **Folder**, and use its
 
 ### Iris shader compatibility
 
-Beta 2 fixes through-wall markers disappearing with Iris shader packs. Ore and
+This backport includes the beta 2 fix for through-wall markers disappearing with Iris shader packs. Ore and
 chest outlines are drawn after shader composition, with the current world camera
 projection, and remain below menus and the HUD. No extra compatibility mod or
 shader setting is required. Turning **Through walls** off retains normal depth
 occlusion. F1 hides the through-wall marker overlay together with the HUD.
 
-Verified with Iris **1.11.6**, Sodium **0.9.3-alpha.1**, and Complementary Reimagined
-**r5.9.3** on Minecraft 26.3, including toggling shaders off/on during play.
+Verified with Iris **1.11.4**, Sodium **0.9.2**, and Complementary Reimagined
+**r5.9.3** on Minecraft 26.2, including toggling shaders off/on during play.
 Other shader packs and rendering mods need separate testing. Shader packs can
 provide their own lighting, so Fullbright's lightmap setting may not brighten
 their rendered scene.
@@ -122,13 +126,13 @@ The test copies the shader into its disposable instance. It checks actual marker
 pixels with the shader active, disabled and re-enabled, and verifies that hidden
 markers and markers behind the camera disappear.
 
-The build pins Minecraft 26.3, Fabric Loader 0.19.5, Fabric API 0.161.0+26.3,
+The build pins Minecraft 26.2, Fabric Loader 0.19.5, Fabric API 0.161.0+26.2,
 Fabric Loom 1.17.21 and Gradle 9.6.0. The Gradle distribution is SHA-256 checked.
 
 Download Java updates from this repository's Releases page and replace the JAR
 while Minecraft is closed. There is no in-game automatic updater.
 
-GitHub Actions builds and runs the unit tests on pushes and pull requests.
+GitHub Actions builds and runs the unit tests on pushes to `support/mc-26.2` and pull requests.
 The workflow retains the JAR, complete source ZIP and checksums as build artifacts;
 public versions are published separately on the Releases page.
 

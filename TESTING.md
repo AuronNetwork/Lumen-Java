@@ -1,8 +1,16 @@
-# Java 26.3 validation
+# Java 26.2 validation
 
-Tested September 29, 2026: Lumen Java 1.0.0-beta.3, Minecraft 26.3,
-Fabric Loader 0.19.5, Fabric API 0.161.0+26.3, Java 25, Windows x64.
+Tested September 29, 2026: Lumen Java 1.0.0-beta.3-mc26.2, Minecraft 26.2,
+Fabric Loader 0.19.5, Fabric API 0.161.0+26.2, Java 25, Windows x64.
 Rendering backend used by the automated game test: OpenGL on NVIDIA hardware.
+
+## Version-specific adaptation
+
+This separate branch targets Minecraft 26.2, retaining the 26.3 release on main.
+Key bindings use the 26.2 GLFW `KEYSYM` type. Render pipelines and the projection
+mixin use the 26.2 Blaze3D classes. The marker callbacks run during vanilla
+world/HUD extraction; projection data is cleared each frame and collected only
+when the world is rendered. Production gameplay features retain the beta 3 behavior.
 
 ## Completed
 
@@ -72,10 +80,11 @@ during rendering, including zoom, camera bobbing and hurt/portal transformations
 Normal depth-tested outlines still use vanilla gizmos. There is no Iris dependency
 or shader modification in the production mod.
 
-The full client game test also passed with Iris **1.11.6+mc26.3**, Sodium
-**0.9.3-alpha.1+mc26.3**, and **Complementary Reimagined r5.9.3** at default shader
-settings. Fixtures were read from local files and copied only into the disposable
-test instance; no personal Prism profile, mod or world was changed.
+The full client game test also passed with Iris **1.11.4+mc26.2**, Sodium
+**0.9.2+mc26.2**, and **Complementary Reimagined r5.9.3** at default shader
+settings. The official Iris/Sodium 26.2 downloads were SHA-512 verified against their
+published Modrinth metadata. The shader was read from the local Prism profile
+and copied only into the disposable test instance; no personal Prism profile, mod or world was changed.
 
 - The test checks the Iris API to confirm the shader pack is actually active.
 - Screenshot pixels confirm all four marker colors behind the sealed stone wall.
@@ -103,7 +112,7 @@ ordering, read/marker/radius limits, removal/replacement, teleport and reset.
 
 These are automated development-client tests plus visual inspection of the
 captured game frames. User acceptance in a normal installed Fabric profile is
-still pending for beta 3. Other shader packs, the rest of the user's Prism modpack
+still pending for this 26.2 backport. Other shader packs, the rest of the user's Prism modpack
 (including Distant Horizons and Freecam), Vulkan, non-Windows platforms and
 multiplayer compatibility were not tested. The Java release remains a beta.
 Fullbright's lightmap state restores correctly with Iris, but a shader pack's
@@ -116,7 +125,7 @@ prevent the test world from loading or the checks from passing.
 
 ## User acceptance
 
-Install the beta and matching Fabric API in a Fabric 26.3 profile. In a local
+Install the beta and matching Fabric API in a Fabric 26.2 profile. In a local
 test world, check Xray with your preferred ore/chest filters, C hold/release,
 B on/off, Insert/Escape and mouse controls. Restart Minecraft to confirm saved
 filters. Toggle **Features → No Attack Cooldown** in singleplayer and compare

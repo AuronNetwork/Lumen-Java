@@ -1,7 +1,7 @@
-name: Build Lumen Java
+name: Build Lumen Java for 26.2
 on:
   push:
-    branches: [main]
+    branches: [support/mc-26.2]
   pull_request:
   workflow_dispatch:
 

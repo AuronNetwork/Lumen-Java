@@ -4,7 +4,7 @@ Lumen Java, Auron Network, September 2026.
 License: GPL-3.0-only; the full license is included in this directory and the JAR.
 
 The Java edition reimplements Lumen's own scanner, settings and interface concepts
-for Minecraft Java 26.3. Its colors, product identity and icon are retained from
+for Minecraft Java 26.2. Its colors, product identity and icon are retained from
 the Auron Network Lumen project. It uses native Minecraft widgets and fonts.
 
 The separate Bedrock edition adapted integration techniques from Latite Client.
