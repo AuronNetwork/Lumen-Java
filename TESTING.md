@@ -1,12 +1,73 @@
 # Java 26.3 validation
 
-Tested September 29, 2026: Lumen Java 1.0.0-beta.3, Minecraft 26.3,
+Tested October 15, 2026: Lumen Java 1.0.0-beta.4, Minecraft 26.3,
 Fabric Loader 0.19.5, Fabric API 0.161.0+26.3, Java 25, Windows x64.
 Rendering backend used by the automated game test: OpenGL on NVIDIA hardware.
 
+## Stream mode and OBS Game Capture
+
+Lumen 1.0.0-beta.4 was tested in the actual Minecraft 26.3 client with a
+separate portable **OBS Studio 32.2.2** instance. That OBS instance used a fresh
+profile and scene collection; it never streamed, recorded or started a virtual
+camera. The user's running OBS profile and personal Minecraft instance were not
+modified.
+
+The same full test passed twice: first without Iris, then with **Iris 1.11.6**,
+**Sodium 0.9.2** and **Complementary Reimagined r5.9.3**. Fixture downloads were
+SHA-512 verified against official Modrinth metadata. Capture checks used real
+OBS `game_capture` output returned by `GetSourceScreenshot`, rather than a mock
+capture or a Minecraft screenshot alone.
+
+| OBS checkpoint | Diamond | Chest | Trapped chest | Ender chest |
+| --- | ---: | ---: | ---: | ---: |
+| Stream mode OFF, normal rendering | present | present | present | present |
+| Stream mode ON, external overlay visible | 0 pixels | 0 pixels | 0 pixels | 0 pixels |
+| Stream mode OFF again | present | present | present | present |
+
+All four colors must have at least 100 matching pixels in each normal-rendering
+capture, and exactly zero in the stream-mode capture. The image must still
+contain the Minecraft scene/HUD, so a blank source cannot pass. Independent
+sidecar color counts agree with the in-game assertions. Screenshot matching
+accounts for HUD vignette brightness and integer color rounding.
+
+Additional checks completed:
+
+- The actual Streaming menu toggle defaults OFF, saves ON and restores normal
+  rendering when switched OFF. Settings tests also cover older/malformed files.
+- The native window is visible while the game remains foreground, with Windows
+  reporting capture affinity `0x11`. Its input styles are click-through and
+  non-activating. The Minecraft game framebuffer contains no marker pixels.
+- A test-only copy of the completed native GDI surface contains all four marker
+  colors. Capture exclusion remains `0x11` during inspection; no screenshot code
+  is included in the production mod.
+- Resizing to 1280x720 keeps the external window aligned to the Minecraft client
+  dimensions. Zoom retains external markers and a clean game framebuffer.
+- Xray OFF, F1, opening the menu, looking behind the camera, and occluded blocks
+  with Through walls OFF hide the external markers. Normal rendering returns
+  after Stream mode is disabled, and closing destroys the native window.
+- The existing filter, Fullbright, mouse/slider, combat damage, configuration,
+  block removal and world exit/re-entry checks still pass.
+
+A preliminary test correctly hid the overlay when Windows kept another window
+in the foreground. The test fixture now explicitly focuses only its own game
+window. Production overlay code never focuses Minecraft or steals activation.
+
+The Windows overlay is limited to 60 updates per second and batches marker
+edges by color. If the native window or verified capture exclusion is unavailable,
+Stream mode suppresses both ordinary game-rendering paths. It never falls back to
+putting markers in the recorded framebuffer. Frames older than 250 ms are hidden.
+With Through walls OFF, the external renderer uses block line of sight, which
+can differ from normal depth-buffer occlusion.
+
+This validates **OBS Game Capture of the Minecraft window** on Windows/OpenGL.
+It does not validate every OBS source method, capture card, third-party recorder,
+Windows version, multi-monitor/DPI combination, or a live Twitch broadcast.
+Exclusive fullscreen is not supported. The Lumen menu, zoom and Fullbright remain
+part of the normal game image and remain visible to the recording.
+
 ## Completed
 
-- `gradlew build`: successful; eleven JUnit tests pass with no failures.
+- `gradlew build`: successful; twelve JUnit tests pass with no failures.
 - `gradlew runClientGameTest`: successful in a separate Fabric development
   instance. Its own test world was created, closed and reopened.
 - All production mixins loaded in the actual game without missing-target errors.
@@ -73,7 +134,7 @@ Normal depth-tested outlines still use vanilla gizmos. There is no Iris dependen
 or shader modification in the production mod.
 
 The full client game test also passed with Iris **1.11.6+mc26.3**, Sodium
-**0.9.3-alpha.1+mc26.3**, and **Complementary Reimagined r5.9.3** at default shader
+**0.9.2+mc26.3**, and **Complementary Reimagined r5.9.3** at default shader
 settings. Fixtures were read from local files and copied only into the disposable
 test instance; no personal Prism profile, mod or world was changed.
 
@@ -87,7 +148,7 @@ test instance; no personal Prism profile, mod or world was changed.
   that the Lumen menu draws above the outlines.
 - The existing filter, zoom release, lightmap restoration, mouse/menu, slider,
   persistence, block removal and world re-entry checks also pass with Iris.
-- The beta 3 integrated-server combat damage and restoration checks also pass
+- The beta 4 integrated-server combat damage and restoration checks also pass
   with this shader configuration.
 
 The three projection tests cover viewport clipping, near-plane crossings,
@@ -103,7 +164,7 @@ ordering, read/marker/radius limits, removal/replacement, teleport and reset.
 
 These are automated development-client tests plus visual inspection of the
 captured game frames. User acceptance in a normal installed Fabric profile is
-still pending for beta 3. Other shader packs, the rest of the user's Prism modpack
+still pending for beta 4. Other shader packs, the rest of the user's Prism modpack
 (including Distant Horizons and Freecam), Vulkan, non-Windows platforms and
 multiplayer compatibility were not tested. The Java release remains a beta.
 Fullbright's lightmap state restores correctly with Iris, but a shader pack's
@@ -124,3 +185,7 @@ rapid attacks on separate targets, then turn it off to restore normal charging.
 Repeated hits on one target still respect its damage immunity.
 Report the Lumen version and that profile's `logs/latest.log` if a
 problem occurs. Do not install the development test mod or source JAR.
+
+For Stream mode, use **Insert → Streaming → Stream mode ON**, close the menu,
+and compare the game with the OBS Game Capture preview or a short local recording.
+Use windowed/borderless mode and verify the full OBS scene before going live.
