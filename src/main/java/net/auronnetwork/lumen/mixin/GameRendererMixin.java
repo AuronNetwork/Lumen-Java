@@ -2,6 +2,8 @@
 package net.auronnetwork.lumen.mixin;
 
 import net.auronnetwork.lumen.MarkerOverlay;
+import net.auronnetwork.lumen.StreamMode;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,6 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 abstract class GameRendererMixin {
     @Inject(method = "extract", at = @At("HEAD"))
     private void lumen$clearPreviousFrame(CallbackInfo ci) {
+        StreamMode.refresh(Minecraft.getInstance());
         ((GameRenderer)(Object)this).gameRenderState().guiRenderState.setData(MarkerOverlay.KEY, null);
     }
 

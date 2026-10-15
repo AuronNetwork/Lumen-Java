@@ -48,4 +48,7 @@ tasks.named('runClientGameTest') {
     if (providers.gradleProperty('shaderTestPack').isPresent()) {
         systemProperty 'lumen.test.shaderPack', providers.gradleProperty('shaderTestPack').get()
     }
+    if (providers.gradleProperty('obsTestDir').isPresent()) {
+        systemProperty 'lumen.test.obsDir', providers.gradleProperty('obsTestDir').get()
+    }
 }

@@ -15,7 +15,7 @@ public final class LumenGameTest implements FabricClientGameTest {
         if (!value) throw new AssertionError(description);
     }
     private static final BlockKind[] TEST_MARKERS = {BlockKind.DIAMOND, BlockKind.CHEST, BlockKind.TRAPPED_CHEST, BlockKind.ENDER_CHEST};
-    private static void checkMarkerImage(java.nio.file.Path path, boolean visible) {
+    static void checkMarkerImage(java.nio.file.Path path, boolean visible) {
         try {
             var image = javax.imageio.ImageIO.read(path.toFile());
             for (var kind : TEST_MARKERS) {
@@ -55,6 +55,7 @@ public final class LumenGameTest implements FabricClientGameTest {
         });
     }
     @Override public void runTest(ClientGameTestContext context) {
+        LumenStreamTest.prepareWindow(context);
         if (FabricLoader.getInstance().isModLoaded("iris")) {
             context.runOnClient(mc -> {
                 try {
@@ -150,6 +151,7 @@ public final class LumenGameTest implements FabricClientGameTest {
                 check(Math.abs(mc.gameRenderer.mainCamera().getFov() - normal) < 0.01f, "C release restores FOV");
                 check(mc.options.gamma().get() == gamma && mc.options.fov().get() == fov, "Original game settings unchanged");
             });
+            LumenStreamTest.run(context);
             context.getInput().pressKey(LumenClient.menuKey);
             context.waitForScreen(LumenScreen.class);
             context.runOnClient(mc -> {
