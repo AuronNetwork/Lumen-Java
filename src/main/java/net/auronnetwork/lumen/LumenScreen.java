@@ -27,10 +27,10 @@ public final class LumenScreen extends Screen {
         panelWidth = Math.min(600, width - 16); panelHeight = Math.min(340, height - 16);
         left = (width - panelWidth) / 2; top = (height - panelHeight) / 2;
         int contentWidth = panelWidth - 24;
-        String[] tabs = {"Features", "Ore Filters", "Chest Filters"};
+        String[] tabs = {"Features", "Ore Filters", "Chest Filters", "Streaming"};
         for (int i = 0; i < tabs.length; i++) {
             final int index = i;
-            button(left + 12 + i * (contentWidth / 3), top + 43, contentWidth / 3 - 4, 22,
+            button(left + 12 + i * (contentWidth / tabs.length), top + 43, contentWidth / tabs.length - 4, 22,
                     () -> tabs[index], () -> tab == index, () -> { tab = index; rebuildWidgets(); }, "");
         }
         int y = top + 76;
@@ -56,6 +56,9 @@ public final class LumenScreen extends Screen {
             addRenderableWidget(new LumenSlider(right, y + 2 * gap, columnWidth, rowHeight, "Zoom", "x", 2, 20, 1, () -> s.zoomFactor, v -> s.zoomFactor = v));
             button(right, y + 4 * gap, columnWidth, rowHeight, () -> "Done", () -> false, this::onClose,
                     "Close Lumen and return to your game.");
+        } else if (tab == 3) {
+            toggle(left + 12, y, contentWidth - 4, rowHeight, "Stream mode", () -> s.streamMode, () -> s.streamMode = !s.streamMode,
+                    "Draw Xray in a separate Windows overlay for OBS Game Capture. The menu, Zoom and Fullbright remain in your recording. Use windowed or borderless mode.");
         } else {
             int start = tab == 1 ? 0 : 10, end = tab == 1 ? 10 : 13;
             int columns = panelWidth >= 390 ? 3 : 2;
@@ -95,6 +98,17 @@ public final class LumenScreen extends Screen {
             String scope = AttackCooldown.available(minecraft) ? "Combat: singleplayer" : "Combat inactive: local only";
             g.centeredText(font, font.plainSubstrByWidth(scope, columnWidth - 8), left + 24 + columnWidth + columnWidth / 2,
                     top + 76 + 3 * gap + 4, MUTED);
+        } else if (tab == 3) {
+            String[] lines = {"Keep Xray markers out of OBS Game Capture.",
+                    "Windows 10 (2004+) / Windows 11.",
+                    "Use windowed or borderless fullscreen.",
+                    "In OBS, capture only the Minecraft game window.",
+                    "The Lumen menu, Zoom and Fullbright stay visible.",
+                    StreamMode.status(minecraft)};
+            int start = top + 76 + Math.clamp((panelHeight - 104) / 5, 20, 43);
+            for (int i = 0; i < lines.length; i++)
+                g.text(font, font.plainSubstrByWidth(lines[i], panelWidth - 24), left + 12, start + i * 15,
+                        i == lines.length - 1 ? SIGNAL : MUTED, false);
         }
         String status = LumenClient.saveError.isEmpty()
                 ? (LumenClient.settings.xray ? LumenClient.markerCount() + " blocks marked" : "Xray is off")

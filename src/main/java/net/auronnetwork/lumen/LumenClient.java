@@ -4,6 +4,7 @@ package net.auronnetwork.lumen;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
@@ -46,10 +47,12 @@ public final class LumenClient implements ClientModInitializer {
         zoomKey = register("zoom", InputConstants.KEY_C, category);
         brightnessKey = register("fullbright", InputConstants.KEY_B, category);
         ClientTickEvents.END_CLIENT_TICK.register(LumenClient::tick);
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> AttackCooldown.clear());
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> { AttackCooldown.clear(); StreamOverlay.hide(); });
+        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> StreamOverlay.close());
         HudElementRegistry.addFirst(Identifier.fromNamespaceAndPath("lumen", "markers"), (graphics, delta) -> {
             Minecraft mc = Minecraft.getInstance();
-            if (settings.throughWalls && canDrawMarkers(mc) && !graphics.guiRenderState.isHudHidden)
+            if ((settings.throughWalls || settings.streamMode) && canDrawMarkers(mc) && !graphics.guiRenderState.isHudHidden
+                    && (!settings.streamMode || StreamMode.canDraw(mc)))
                 MarkerOverlay.extract(graphics, mc, hits, settings.filters);
         });
         LOG.info("Lumen Java ready: Minecraft 26.2; {} supported blocks; local-world combat option available", kinds.size());
@@ -59,6 +62,7 @@ public final class LumenClient implements ClientModInitializer {
     }
     public static void save() {
         AttackCooldown.refresh(Minecraft.getInstance());
+        StreamMode.refresh(Minecraft.getInstance());
         try { settings.save(CONFIG); saveError = ""; }
         catch (Exception e) { saveError = "Could not save settings. See latest.log."; LOG.error("Cannot save Lumen settings", e); }
     }
@@ -73,6 +77,7 @@ public final class LumenClient implements ClientModInitializer {
     }
     private static void tick(Minecraft mc) {
         AttackCooldown.refresh(mc);
+        StreamMode.refresh(mc);
         while (menuKey.consumeClick()) {
             if (mc.player != null && mc.gui.screen() == null) mc.gui.setScreen(new LumenScreen());
         }
@@ -94,8 +99,6 @@ public final class LumenClient implements ClientModInitializer {
     }
     public static int markerCount() { return hits.size(); }
     private static boolean canDrawMarkers(Minecraft mc) {
-        // In 26.2, vanilla invokes the HUD/gizmo callbacks only for level frames.
-        // There is no GameRenderState.shouldRenderLevel field in this version.
         return settings.xray && mc.level != null && mc.level == scannedLevel && mc.player != null
                 && mc.isGameLoadFinished();
     }
@@ -104,7 +107,7 @@ public final class LumenClient implements ClientModInitializer {
         Minecraft mc = Minecraft.getInstance();
         // Iris retains world depth for its composites, so vanilla always-on-top gizmos
         // remain occluded. Through-wall markers use the separate GUI overlay below.
-        if (settings.throughWalls || !canDrawMarkers(mc)) return;
+        if (settings.streamMode || settings.throughWalls || !canDrawMarkers(mc)) return;
         try (var ignored = mc.levelExtractor.collectPerFrameMainThreadGizmos()) {
             for (var hit : hits) {
                 if (!settings.selected(hit.kind())) continue;

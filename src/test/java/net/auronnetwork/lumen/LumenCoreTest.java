@@ -50,6 +50,21 @@ class LumenCoreTest {
         Files.writeString(file, "noAttackCooldown=invalid\n");
         assertFalse(LumenSettings.load(file).noAttackCooldown);
     }
+    @Test void streamModeDefaultsOffAndPersistsWithoutChangingOtherOptions() throws Exception {
+        var file = directory.resolve("lumen.properties");
+        assertFalse(LumenSettings.load(file).streamMode);
+        Files.writeString(file, "xray=true\nthroughWalls=false\nfilters=8191\n");
+        var s = LumenSettings.load(file);
+        assertFalse(s.streamMode);
+        s.streamMode = true; s.save(file);
+        var restored = LumenSettings.load(file);
+        assertTrue(restored.streamMode); assertTrue(restored.xray);
+        assertFalse(restored.throughWalls); assertEquals(s.filters, restored.filters);
+        restored.streamMode = false; restored.save(file);
+        assertFalse(LumenSettings.load(file).streamMode);
+        Files.writeString(file, "streamMode=invalid\n");
+        assertFalse(LumenSettings.load(file).streamMode);
+    }
     @Test void markerOrderingLimitsAndRefreshTrackWorldChanges() {
         var scanner = new BlockScanner(); var world = new HashMap<BlockScanner.Position, BlockKind>();
         var near = new BlockScanner.Position(1, 0, 0); var far = new BlockScanner.Position(3, 0, 0);
